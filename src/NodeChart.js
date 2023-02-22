@@ -122,14 +122,14 @@ const files = flare.filter((d) => d.value !== null); // just the leaves
 
 const MapChart = ({ selectHandler, selectedState, year, metric, weighted }) => {
   const data = React.useMemo(() => {
-    const dataSet = metric === "to" ? where_to : where_from;
-    const d = { ...dataSet[selectedState][year] };
-    delete d[selectedState];
-    delete d["FC"]; // TODO: delete from d set?
+    const dataSet = metric === "to" ? where_to : where_from
+    const d = { ...dataSet[selectedState][year] }
+    delete d[selectedState]
+    delete d["FC"] // TODO: delete from d set?
     if (metric === "between") {
-      _.forEach(d, (v, id) => (d[id] = v - where_to[selectedState][year][id]));
+      _.forEach(d, (v, id) => (d[id] = v - where_to[selectedState][year][id]))
     }
-    return d;
+    return d
   }, [year, metric, selectedState]);
 
   const colorScale = React.useMemo(() => {

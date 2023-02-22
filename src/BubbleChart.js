@@ -8,7 +8,7 @@ export default function BubbleChart(
     name = ([x]) => x, // alias for label
     label = name, // given d in data, returns text to display on the bubble
     value = ([, y]) => y, // given d in data, returns a quantitative size
-    group, // given d in data, returns a categorical value for color
+    // group, // given d in data, returns a categorical value for color
     title, // given d in data, returns text to show on hover
     link, // given a node d, its link (if any)
     linkTarget = "_blank", // the target attribute for links, if any
@@ -20,39 +20,38 @@ export default function BubbleChart(
     marginRight = margin, // right margin, in pixels
     marginBottom = margin, // bottom margin, in pixels
     marginLeft = margin, // left margin, in pixels
-    groups, // array of group names (the domain of the color scale)
-    colors = d3.schemeTableau10, // an array of colors (for groups)
+    // groups, // array of group names (the domain of the color scale)
+    // colors = d3.schemeTableau10, // an array of colors (for groups)
     fill = "#ccc", // a static fill color, if no group channel is specified
     fillOpacity = 0.7, // the fill opacity of the bubbles
     stroke, // a static stroke around the bubbles
     strokeWidth, // the stroke width around the bubbles, if any
-    strokeOpacity // the stroke opacity around the bubbles, if any
+    strokeOpacity, // the stroke opacity around the bubbles, if any
   } = {}
 ) {
   // Compute the values.
-  const D = d3.map(data, (d) => d);
-  const V = d3.map(data, value);
-  const G = group == null ? null : d3.map(data, group);
-  const I = d3.range(V.length);
-  console.log({ D, V, G, I });
+  const D = d3.map(data, (d) => d)
+  const V = d3.map(data, value)
+  // const G = group == null ? null : d3.map(data, group)
+  const I = d3.range(V.length)
+  // console.log({ D, V, G, I })
 
   // Unique the groups.
-  if (G && groups === undefined) groups = I.map((i) => G[i]);
-  groups = G && new d3.InternSet(groups);
+  // if (G && groups === undefined) groups = I.map((i) => G[i])
+  // groups = G && new d3.InternSet(groups)
 
   // Construct scales.
-  const color = G && d3.scaleOrdinal(groups, colors);
+  // const color = G && d3.scaleOrdinal(groups, colors)
 
   // Compute labels and titles.
-  const L = label == null ? null : d3.map(data, label);
-  const T =
-    title === undefined ? L : title == null ? null : d3.map(data, title);
+  const L = label == null ? null : d3.map(data, label)
+  const T = title === undefined ? L : title == null ? null : d3.map(data, title)
 
   // Compute layout: create a 1-deep hierarchy, and pack it.
   const root = d3
     .pack()
     .size([width - marginLeft - marginRight, height - marginTop - marginBottom])
-    .padding(padding)(d3.hierarchy({ children: I }).sum((i) => Math.abs(V[i])));
+    .padding(padding)(d3.hierarchy({ children: I }).sum((i) => Math.abs(V[i])))
 
   const svg = d3
     .select("svg")
@@ -63,41 +62,125 @@ export default function BubbleChart(
     .attr("fill", "currentColor")
     .attr("font-size", 10)
     .attr("font-family", "sans-serif")
-    .attr("text-anchor", "middle");
+    .attr("text-anchor", "middle")
 
-  console.log(78, root.leaves());
-  const leaf = svg
+  // console.log(78, root.leaves())
+  const sortedData = root
+    .leaves()
+    .map((d, i) => ({
+      ...d,
+      l: L[d.data],
+    }))
+    .sort((a, b) => b.r - a.r)
+
+  const leafs = svg
     .selectAll(".cirx")
-    .data(root.leaves(), (d) => console.log(71, d) || d.data)
+    .data(root.leaves(), (d, i) => (i < 3 && console.log(71, d, i)) || d.data)
+    // .join("g")
     .join(
       (enter) =>
-        console.log(73, enter) ||
         enter
           .append("g")
           .attr("class", "cirx")
-          .attr("transform", (d, i) => `translate(${d.x},${d.y})`)
-          .attr("stroke", "red")
-          .attr("stroke-width", strokeWidth)
-          .attr("stroke-opacity", strokeOpacity)
-          .attr(
-            "fill",
-            G ? (d) => color(G[d.data]) : fill == null ? "none" : fill
-          )
-          .attr("fill-opacity", fillOpacity)
-          .append("circle")
-          .attr("r", (d) => Math.abs(d.r))
-          .append("text")
-          .text((d) => L[d.data]),
+          .attr("transform", (d, i) => `translate(${d.x},${d.y})`),
       (update) =>
-        console.log(82, update) ||
         update
           .transition()
+          .delay((d, i) => i * 20)
           .duration(1000)
-          .attr("transform", (d) => `translate(${d.x},${d.y})`)
+          .attr("transform", (d, i) => `translate(${d.x},${d.y})`)
+          .attr("stroke", "blue"),
+      (exit) => exit.remove()
+    )
+
+  const circles = leafs
+    .selectAll("circle")
+    .data((d, i) => (i < 3 && console.log(97, d, i)) || d)
+    // .join("circle")
+    .join(
+      (enter) =>
+        enter
+          .append("circle")
+          .attr("stroke-width", strokeWidth)
+          .attr("stroke-opacity", 0.1)
+          .attr(
+            "fill",
+            "aqua"
+            // G ? (d) => color(G[d.data]) : fill == null ? "none" : fill
+          )
+          .attr("fill-opacity", 0.2)
+          .attr("r", (d) => Math.abs(d.r)),
+      (update) =>
+        update
+          .transition()
+          .delay((d, i) => i * 20)
+          .duration(1000)
           .attr("r", (d) => Math.abs(d.r))
-          .attr("fill", "yellow"),
-      (exit) => console.log(88, exit) || exit.remove()
-    );
+          .attr("stroke", "red"),
+      (exit) => exit.remove()
+    )
+
+  const labels = leafs
+    .selectAll("text")
+    .data((d) => d)
+    // .join("text")
+    .join(
+      (enter) =>
+        enter
+          .append("text")
+          .text((d) => L[d.data])
+          .attr("font-size", 18),
+      (update) => update.text((d) => L[d.data]),
+      (exit) => exit.remove()
+    )
+  // .join(
+  //   (enter) =>
+  //     console.log(73, enter) ||
+  //     enter
+  //       .append("g")
+  //       // .append("circle")
+  //       .attr("class", "cirx")
+  //       .attr("transform", (d, i) => `translate(${d.x},${d.y})`),
+
+  //   // .append("text")
+  //   // .text((d) => L[d.data]),
+  //   (update) =>
+  //     console.log(82, update) ||
+  //     update
+  //       // .transition()
+  // /delay       // .duration((d, i) => i * 20)
+  // 1000)
+  //       .attr("transform", (d) => `translate(${d.x},${d.y})`)
+  //       .attr("r", (d) => Math.abs(d.r))
+  //       .attr("fill", "yellow"),
+  //   (exit) => console.log(88, exit) || exit.remove()
+  // )
+
+  // console.log(94, leafs, leafs.selectAll("circle"), root.leaves())
+
+  // leaf
+  //   .selectAll("circle")
+  //   // .data([{ r: 2 }])
+  //   // .enter()
+  //   .append("circle")
+  //   .attr("stroke", "red")
+  //   .attr("stroke-width", strokeWidth)
+  //   .attr("stroke-opacity", strokeOpacity)
+  //   .attr(
+  //     "fill",
+  //     "aqua"
+  //     // G ? (d) => color(G[d.data]) : fill == null ? "none" : fill
+  //   )
+  //   .attr("fill-opacity", fillOpacity)
+  //   .attr(
+  //     "r",
+  //     (d, i) =>
+  //       console.log(
+  //         111,
+  //         d,
+  //         Math.abs(root.leaves()[i].r) || Math.abs(root.leaves()[i].r)
+  //       ) || 17
+  //   )
   //   .attr(
   //     "xlink:href",
   //     link == null ? null : (d, i) => link(D[d.data], i, data)
@@ -118,7 +201,7 @@ export default function BubbleChart(
 
   if (L) {
     // A unique identifier for clip paths (to avoid conflicts).
-    const uid = `O-${Math.random().toString(16).slice(2)}`;
+    const uid = `O-${Math.random().toString(16).slice(2)}`
 
     // leaf
     //   .append("clipPath")
@@ -142,5 +225,16 @@ export default function BubbleChart(
     //   .text((d) => d);
   }
 
+  window.x = {
+    D,
+    V,
+    // G,
+    I,
+    L,
+    T,
+    root,
+    data,
+  }
+  console.log(220, data)
   // return Object.assign(svg.node(), { scales: { color } });
 }

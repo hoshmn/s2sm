@@ -9,7 +9,7 @@ import ControlString from "./ControlString";
 
 function App() {
   const [selectedState, setSelecetedState] = React.useState("AK");
-  const [year, selectYear] = React.useState("19");
+  const [year, selectYear] = React.useState("05")
   const [metric, selectMetric] = React.useState("between");
   const [weighted, setWeighted] = React.useState(true);
   console.log(selectedState);

@@ -67,38 +67,38 @@ const format = ({ d, weighted }) => (!weighted ? d : Math.round(d * 10) / 10);
 
 const MapChart = ({ selectHandler, selectedState, year, metric, weighted }) => {
   const colorScale = React.useMemo(() => {
-    const dataSet = metric === "to" ? where_to : where_from;
-    const data = { ...dataSet[selectedState][year] };
-    delete data[selectedState];
-    delete data["FC"]; // TODO: delete from data set?
+    const dataSet = metric === "to" ? where_to : where_from
+    const data = { ...dataSet[selectedState][year] }
+    delete data[selectedState]
+    delete data["FC"] // TODO: delete from data set?
     if (metric === "between") {
       _.forEach(
         data,
         (v, id) => (data[id] = v - where_to[selectedState][year][id])
-      );
+      )
     }
     // console.log('cs')
     // console.log(data[selectedState], selectedState, data)
     const values = !weighted
       ? Object.values(data)
       : _.map(data, (n, id) => {
-          const pop = getPopOf100k(id);
+          const pop = getPopOf100k(id)
           // console.log(id, n, pop, "@@@@")
-          return pop && n / Number(pop);
-        });
-    const extents = extent(values);
+          return pop && n / Number(pop)
+        })
+    const extents = extent(values)
     console.log(
       [extents[0], 0, extents[1]],
       "?",
       max(values),
       min(values),
       values
-    );
-    const isDiverging = metric === "between";
+    )
+    const isDiverging = metric === "between"
     if (isDiverging)
       return scaleDiverging()
         .domain([extents[0], 0, extents[1]])
-        .interpolator(interpolateRdYlBu);
+        .interpolator(interpolateRdYlBu)
     // .interpolator(interpolateBuPu);
 
     return (
@@ -106,7 +106,7 @@ const MapChart = ({ selectHandler, selectedState, year, metric, weighted }) => {
         .domain(extents)
         // .interpolator(interpolateViridis);
         .interpolator(metric === "from" ? interpolatePuBu : interpolateOrRd)
-    );
+    )
   }, [year, metric, weighted, selectedState]);
   const getFill = (d, isSelected) => (isSelected ? "#000" : colorScale(d));
   // const dScale = scalePow()

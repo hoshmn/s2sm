@@ -66,60 +66,6 @@ const getD = ({ selectedState, s2, metric, year, weighted }) => {
 
 const format = ({ d, weighted }) => (!weighted ? d : Math.round(d * 10) / 10);
 
-const flare = [
-  { id: "flare", value: null },
-  { id: "flare.analytics", value: null },
-  { id: "flare.analytics.cluster", value: null },
-  { id: "flare.analytics.cluster.AgglomerativeCluster", value: 3938 },
-  { id: "flare.analytics.cluster.CommunityStructure", value: 3812 },
-  { id: "flare.analytics.cluster.HierarchicalCluster", value: 6714 },
-  { id: "flare.analytics.cluster.MergeEdge", value: 743 },
-  { id: "flare.analytics.graph", value: null },
-  { id: "flare.analytics.graph.BetweennessCentrality", value: 3534 },
-  { id: "flare.analytics.graph.LinkDistance", value: 5731 },
-  { id: "flare.analytics.graph.MaxFlowMinCut", value: 7840 },
-  { id: "flare.analytics.graph.ShortestPaths", value: 5914 },
-  { id: "flare.analytics.graph.SpanningTree", value: 3416 },
-  { id: "flare.analytics.optimization", value: null },
-  { id: "flare.analytics.optimization.AspectRatioBanker", value: 7074 },
-  { id: "flare.animate", value: null },
-  { id: "flare.animate.Easing", value: 17010 },
-  { id: "flare.animate.FunctionSequence", value: 5842 },
-  { id: "flare.animate.interpolate", value: null },
-  { id: "flare.animate.interpolate.ArrayInterpolator", value: 1983 },
-  { id: "flare.animate.interpolate.ColorInterpolator", value: 2047 },
-  { id: "flare.animate.interpolate.DateInterpolator", value: 1375 },
-  { id: "flare.animate.interpolate.Interpolator", value: 8746 },
-  { id: "flare.animate.interpolate.MatrixInterpolator", value: 2202 },
-  { id: "flare.animate.interpolate.NumberInterpolator", value: 1382 },
-  { id: "flare.animate.interpolate.PointInterpolator", value: 1675 },
-  { id: "flare.animate.interpolate.RectangleInterpolator", value: 2042 },
-  { id: "flare.animate.ISchedulable", value: 1041 },
-  { id: "flare.animate.Parallel", value: 5176 },
-  { id: "flare.animate.Pause", value: 449 },
-  { id: "flare.animate.Scheduler", value: 5593 },
-  { id: "flare.animate.Sequence", value: 5534 },
-  { id: "flare.animate.Transition", value: 9201 },
-  { id: "flare.animate.Transitioner", value: 19975 },
-  { id: "flare.animate.TransitionEvent", value: 1116 },
-  { id: "flare.animate.Tween", value: 6006 },
-  { id: "flare.data", value: null },
-  { id: "flare.data.converters", value: null },
-  { id: "flare.data.converters.Converters", value: 721 },
-  { id: "flare.data.converters.DelimitedTextConverter", value: 4294 },
-  { id: "flare.data.converters.GraphMLConverter", value: 9800 },
-  { id: "flare.data.converters.IDataConverter", value: 1314 },
-  { id: "flare.data.converters.JSONConverter", value: 2220 },
-  { id: "flare.data.DataField", value: 1759 },
-  { id: "flare.data.DataSchema", value: 2165 },
-  { id: "flare.data.DataSet", value: 586 },
-  { id: "flare.data.DataSource", value: 3331 },
-  { id: "flare.data.DataTable", value: 772 },
-  { id: "flare.data.DataUtil", value: 3322 }
-];
-
-const files = flare.filter((d) => d.value !== null); // just the leaves
-
 const MapChart = ({ selectHandler, selectedState, year, metric, weighted }) => {
   const data = React.useMemo(() => {
     const dataSet = metric === "to" ? where_to : where_from
@@ -130,7 +76,7 @@ const MapChart = ({ selectHandler, selectedState, year, metric, weighted }) => {
       _.forEach(d, (v, id) => (d[id] = v - where_to[selectedState][year][id]))
     }
     return d
-  }, [year, metric, selectedState]);
+  }, [year, metric, selectedState])
 
   const colorScale = React.useMemo(() => {
     // console.log('cs')
@@ -138,23 +84,23 @@ const MapChart = ({ selectHandler, selectedState, year, metric, weighted }) => {
     const values = !weighted
       ? Object.values(data)
       : _.map(data, (n, id) => {
-          const pop = getPopOf100k(id);
+          const pop = getPopOf100k(id)
           // console.log(id, n, pop, "@@@@")
-          return pop && n / Number(pop);
-        });
-    const extents = extent(values);
+          return pop && n / Number(pop)
+        })
+    const extents = extent(values)
     console.log(
       [extents[0], 0, extents[1]],
       "?",
       max(values),
       min(values),
       values
-    );
-    const isDiverging = metric === "between";
+    )
+    const isDiverging = metric === "between"
     if (isDiverging)
       return scaleDiverging()
         .domain([extents[0], 0, extents[1]])
-        .interpolator(interpolateRdYlBu);
+        .interpolator(interpolateRdYlBu)
     // .interpolator(interpolateBuPu);
 
     return (
@@ -162,9 +108,9 @@ const MapChart = ({ selectHandler, selectedState, year, metric, weighted }) => {
         .domain(extents)
         // .interpolator(interpolateViridis);
         .interpolator(metric === "from" ? interpolatePuBu : interpolateOrRd)
-    );
-  }, [data, metric, weighted]);
-  const getFill = (d, isSelected) => (isSelected ? "#000" : colorScale(d));
+    )
+  }, [data, metric, weighted])
+  const getFill = (d, isSelected) => (isSelected ? "#000" : colorScale(d))
   // const dScale = scalePow()
   //   .exponent(.7)
   //   .domain(extents)
@@ -175,11 +121,45 @@ const MapChart = ({ selectHandler, selectedState, year, metric, weighted }) => {
   //   colorScale(d)
 
   useEffect(() => {
-    console.log(178, data);
-    const dArr = Object.keys(data).map((id) => ({
-      id,
-      value: data[id]
-    }));
+    console.log(178, data)
+    // const d = getD({
+    //   selectedState,
+    //   s2: cur.id,
+    //   metric,
+    //   year,
+    //   weighted,
+    // })
+    const dArr = Object.keys(data)
+      .map(
+        (id) =>
+          console.log(
+            getD({
+              selectedState,
+              s2: id,
+              metric,
+              year,
+              weighted,
+            }),
+            data[id],
+            metric,
+            year,
+            weighted,
+            selectedState
+          ) || {
+            id,
+            value: data[id],
+            color: getFill(
+              getD({
+                selectedState,
+                s2: id,
+                metric,
+                year,
+                weighted,
+              })
+            ),
+          }
+      )
+      .sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
     const BubChart = BubbleChart(dArr, {
       label: (d) =>
         [
@@ -187,16 +167,16 @@ const MapChart = ({ selectHandler, selectedState, year, metric, weighted }) => {
             .split(".")
             .pop()
             .split(/(?=[A-Z][a-z])/g),
-          d.value.toLocaleString("en")
+          d.value.toLocaleString("en"),
         ].join("\n"),
       value: (d) => d.value,
       group: (d) => d.id.split(".")[1],
       title: (d) => `${d.id}\n${d.value.toLocaleString("en")}`,
-      width: 1152
-    });
+      width: 1152,
+    })
 
     // console.log(BubChart);
-  });
+  })
 
   return (
     <>
@@ -212,22 +192,22 @@ const MapChart = ({ selectHandler, selectedState, year, metric, weighted }) => {
           {({ geographies }) => (
             <>
               {geographies.map((geo) => {
-                const cur = allStates[geo.id];
-                !!cur || console.log({ cur, geo, allStates });
+                const cur = allStates[geo.id]
+                !!cur || console.log({ cur, geo, allStates })
                 const selectState = () => {
-                  selectHandler(cur.id);
-                };
+                  selectHandler(cur.id)
+                }
 
                 const d = getD({
                   selectedState,
                   s2: cur.id,
                   metric,
                   year,
-                  weighted
-                });
+                  weighted,
+                })
                 // console.log(cur.id, d, "!");
-                const isSelected = cur.id === selectedState;
-                const fill = getFill(d, isSelected);
+                const isSelected = cur.id === selectedState
+                const fill = getFill(d, isSelected)
                 // console.log(d, isSelected, fill)
                 //  "#badbad" + String(Math.round(dScale(d)).toString(16))
                 return (
@@ -239,11 +219,11 @@ const MapChart = ({ selectHandler, selectedState, year, metric, weighted }) => {
                     geography={geo}
                     fill={fill}
                   />
-                );
+                )
               })}
               {geographies.map((geo) => {
-                const centroid = geoCentroid(geo);
-                const cur = allStates[geo.id];
+                const centroid = geoCentroid(geo)
+                const cur = allStates[geo.id]
                 // return null
                 // const data = metric === "from" ?  where_from : where_to;
                 const d = getD({
@@ -251,15 +231,15 @@ const MapChart = ({ selectHandler, selectedState, year, metric, weighted }) => {
                   s2: cur.id,
                   metric,
                   year,
-                  weighted
-                });
-                const v = format({ d, weighted });
+                  weighted,
+                })
+                const v = format({ d, weighted })
                 // const pop = _.get(where_from, [cur.id, year, cur.id])
 
                 // const weighted = pop && (Math.round(d*10000/pop))/10000
                 // console.log(pop)
                 // console.log(dScale(d))
-                const isSelected = cur.id === selectedState;
+                const isSelected = cur.id === selectedState
                 // const stroke = hsl(getFill(d, isSelected)).l > 0.5 ? "#000" : "#fff"
                 return (
                   <g key={geo.rsmKey + "-name"}>
@@ -328,14 +308,14 @@ const MapChart = ({ selectHandler, selectedState, year, metric, weighted }) => {
                         </Annotation>
                       ))}
                   </g>
-                );
+                )
               })}
             </>
           )}
         </Geographies>
       </ComposableMap>
     </>
-  );
-};
+  )
+}
 
 export default MapChart;

@@ -32,6 +32,7 @@ export default function BubbleChart(
   // Compute the values.
   const D = d3.map(data, (d) => d)
   const V = d3.map(data, value)
+  const C = d3.map(data, (d) => d.color)
   // const G = group == null ? null : d3.map(data, group)
   const I = d3.range(V.length)
   // console.log({ D, V, G, I })
@@ -86,7 +87,7 @@ export default function BubbleChart(
       (update) =>
         update
           .transition()
-          .delay((d, i) => i * 20)
+          .delay((d, i) => i * 30)
           .duration(1000)
           .attr("transform", (d, i) => `translate(${d.x},${d.y})`)
           .attr("stroke", "blue"),
@@ -105,16 +106,18 @@ export default function BubbleChart(
           .attr("stroke-opacity", 0.1)
           .attr(
             "fill",
-            "aqua"
+            (d) => C[d.data]
+            // "aqua"
             // G ? (d) => color(G[d.data]) : fill == null ? "none" : fill
           )
-          .attr("fill-opacity", 0.2)
+          .attr("fill-opacity", 0.7)
           .attr("r", (d) => Math.abs(d.r)),
       (update) =>
         update
           .transition()
-          .delay((d, i) => i * 20)
+          .delay((d, i) => i * 30)
           .duration(1000)
+          .attr("fill", (d) => C[d.data])
           .attr("r", (d) => Math.abs(d.r))
           .attr("stroke", "red"),
       (exit) => exit.remove()
@@ -128,9 +131,35 @@ export default function BubbleChart(
       (enter) =>
         enter
           .append("text")
-          .text((d) => L[d.data])
-          .attr("font-size", 18),
-      (update) => update.text((d) => L[d.data]),
+          .attr("stroke-width", 0)
+          .attr("fill-opacity", (d) => (d.r > 40 ? 1 : 0))
+          .text(function (d) {
+            this.__oldLabel = L[d.data]
+            console.log(137, this, L[d.data])
+            return L[d.data].replace(/,\d{3}$/, "k")
+          })
+          .attr("font-size", (d, i) => 18 + (d.data < 5 ? d.r ** 2 / 1000 : 0)),
+      (update) =>
+        update
+          .transition()
+          .delay((d, i) => i * 30)
+          .duration(200)
+          .attr("font-size", function (d) {
+            // if it's the same state, don't zoom text out/in
+            if (this.__oldLabel.slice(0, 2) === L[d.data].slice(0, 2)) {
+              return 18 + (d.data < 5 ? d.r ** 2 / 1000 : 0)
+            } else return 0
+          })
+          .transition()
+          .delay((d, i) => i * 30)
+          .duration(1000)
+          .attr("fill-opacity", (d) => (d.r > 40 ? 1 : 0))
+          .text(function (d) {
+            this.__oldLabel = L[d.data]
+            console.log(137, this, this.__oldLabel, L[d.data])
+            return L[d.data].replace(/,\d{3}$/, "k")
+          })
+          .attr("font-size", (d, i) => 18 + (d.data < 5 ? d.r ** 2 / 1000 : 0)),
       (exit) => exit.remove()
     )
   // .join(
@@ -148,7 +177,7 @@ export default function BubbleChart(
   //     console.log(82, update) ||
   //     update
   //       // .transition()
-  // /delay       // .duration((d, i) => i * 20)
+  // /delay       // .duration((d, i) => i * 30)
   // 1000)
   //       .attr("transform", (d) => `translate(${d.x},${d.y})`)
   //       .attr("r", (d) => Math.abs(d.r))
@@ -228,6 +257,7 @@ export default function BubbleChart(
   window.x = {
     D,
     V,
+    C,
     // G,
     I,
     L,
